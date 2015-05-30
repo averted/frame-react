@@ -1,0 +1,16 @@
+{
+  "name": "React frame",
+  "version": "0.0.0",
+  "description": "React starting point",
+  "main": "index.html",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "vendor",
+    "src/vendor",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+  }
+}
