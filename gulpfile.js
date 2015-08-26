@@ -4,9 +4,11 @@ var del   = require('del');
 var $     = require('gulp-load-plugins')();
 
 // config
-var port = $.util.env.port || 4444;
-var src = 'src/';
-var dist = 'dist/';
+var config = {
+  port: $.util.env.port || 4444,
+  src: 'src/',
+  dist: 'dist/',
+};
 
 // env config
 var environment   = $.util.env.type || 'development';
@@ -30,57 +32,57 @@ gulp.task('js', function() {
   return gulp.src(webpackConfig.entry)
     .pipe($.webpack(webpackConfig))
     .pipe(isProduction ? $.uglifyjs() : $.util.noop())
-    .pipe(gulp.dest(dist + 'js/'))
+    .pipe(gulp.dest(config.dist + 'js/'))
     .pipe($.size({ title : 'js' }))
     .pipe($.connect.reload());
 });
 
 // copy html from src to dist
 gulp.task('html', function() {
-  return gulp.src(src + 'index.html')
-    .pipe(gulp.dest(dist))
+  return gulp.src(config.src + 'index.html')
+    .pipe(gulp.dest(config.dist))
     .pipe($.size({ title : 'html' }))
     .pipe($.connect.reload());
 });
 
 // convert stylus to css
 gulp.task('styles',function(cb) {
-  return gulp.src(src + 'styles/app.styl')
+  return gulp.src(config.src + 'styles/app.styl')
     .pipe($.stylus({
       compress: isProduction, // only compress if we are in production
       'include css' : true    // include 'normal' css into app.css
     }))
     .pipe($.autoprefixer({browsers: autoprefixerBrowsers}))
-    .pipe(gulp.dest(dist + 'css/'))
+    .pipe(gulp.dest(config.dist + 'css/'))
     .pipe($.size({ title : 'css' }))
     .pipe($.connect.reload());
 });
 
 // copy images
 gulp.task('images', function(cb) {
-  return gulp.src(src + 'public/img/**/*.{png,jpg,jpeg,gif}')
+  return gulp.src(config.src + 'public/img/**/*.{png,jpg,jpeg,gif}')
     .pipe($.size({ title : 'images' }))
-    .pipe(gulp.dest(dist + 'img/'));
+    .pipe(gulp.dest(config.dist + 'img/'));
 });
 
 // waits until clean is finished then builds the project
 gulp.task('build', ['images', 'js', 'styles'], function(){
-  return gulp.src(src + 'index.html')
-    .pipe(gulp.dest(dist))
+  return gulp.src(config.src + 'index.html')
+    .pipe(gulp.dest(config.dist))
     .pipe($.size({ title : 'html' }))
     .pipe($.connect.reload());
 });
 
 // remove bundels
 gulp.task('clean', function(cb) {
-  del([dist], cb);
+  del([config.dist], cb);
 });
 
 // add livereload on the given port
 gulp.task('server:connect', ['build'], function() {
   $.connect.server({
-    root: dist,
-    port: port,
+    root: config.dist,
+    port: config.port,
     livereload: {
       port: 35729
     }
@@ -89,10 +91,10 @@ gulp.task('server:connect', ['build'], function() {
 
 // watch styl, html and js file changes
 gulp.task('server', ['server:connect'], function() {
-  gulp.watch(src + 'styles/*.styl', ['styles']);
-  gulp.watch(src + 'index.html', ['html']);
-  gulp.watch(src + 'app/**/*.js', ['js']);
-  gulp.watch(src + 'app/**/*.jsx', ['js']);
+  gulp.watch(config.src + 'styles/*.styl', ['styles']);
+  gulp.watch(config.src + 'index.html', ['html']);
+  gulp.watch(config.src + 'app/**/*.js', ['js']);
+  gulp.watch(config.src + 'app/**/*.jsx', ['js']);
 });
 
 // by default build project and then watch files in order to trigger livereload
