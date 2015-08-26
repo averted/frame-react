@@ -26,7 +26,7 @@ var autoprefixerBrowsers = [
   'bb >= 10'
 ];
 
-gulp.task('scripts', function() {
+gulp.task('js', function() {
   return gulp.src(webpackConfig.entry)
     .pipe($.webpack(webpackConfig))
     .pipe(isProduction ? $.uglifyjs() : $.util.noop())
@@ -56,8 +56,28 @@ gulp.task('styles',function(cb) {
     .pipe($.connect.reload());
 });
 
+// copy images
+gulp.task('images', function(cb) {
+  return gulp.src(src + 'public/img/**/*.{png,jpg,jpeg,gif}')
+    .pipe($.size({ title : 'images' }))
+    .pipe(gulp.dest(dist + 'img/'));
+});
+
+// waits until clean is finished then builds the project
+gulp.task('build', ['images', 'js', 'styles'], function(){
+  return gulp.src(src + 'index.html')
+    .pipe(gulp.dest(dist))
+    .pipe($.size({ title : 'html' }))
+    .pipe($.connect.reload());
+});
+
+// remove bundels
+gulp.task('clean', function(cb) {
+  del([dist], cb);
+});
+
 // add livereload on the given port
-gulp.task('serve', function() {
+gulp.task('server:connect', ['build'], function() {
   $.connect.server({
     root: dist,
     port: port,
@@ -67,31 +87,15 @@ gulp.task('serve', function() {
   });
 });
 
-// copy images
-gulp.task('images', function(cb) {
-  return gulp.src(src + 'public/img/**/*.{png,jpg,jpeg,gif}')
-    .pipe($.size({ title : 'images' }))
-    .pipe(gulp.dest(dist + 'img/'));
-});
-
 // watch styl, html and js file changes
-gulp.task('watch', function() {
+gulp.task('server', ['server:connect'], function() {
   gulp.watch(src + 'styles/*.styl', ['styles']);
   gulp.watch(src + 'index.html', ['html']);
-  gulp.watch(src + 'app/**/*.js', ['scripts']);
-  gulp.watch(src + 'app/**/*.jsx', ['scripts']);
+  gulp.watch(src + 'app/**/*.js', ['js']);
+  gulp.watch(src + 'app/**/*.jsx', ['js']);
 });
-
-// remove bundels
-gulp.task('clean', function(cb) {
-  del([dist], cb);
-});
-
 
 // by default build project and then watch files in order to trigger livereload
-gulp.task('default', ['build', 'serve', 'watch']);
-
-// waits until clean is finished then builds the project
-gulp.task('build', ['clean'], function(){
-  gulp.start(['images', 'html','scripts','styles']);
+gulp.task('default', function() {
+  gulp.start('server');
 });
