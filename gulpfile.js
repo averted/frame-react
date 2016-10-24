@@ -12,7 +12,7 @@ var config = {
 
 // env config
 var environment   = $.util.env.type || 'development';
-var isProduction  = environment === 'production';
+var isProduction  = process.env.NODE_ENV === 'production';
 var webpackConfig = require('./webpack.config.js')[environment];
 
 // https://github.com/ai/autoprefixer
@@ -32,7 +32,7 @@ gulp.task('js', function() {
   return gulp.src(webpackConfig.entry)
     .pipe($.webpack(webpackConfig))
     .pipe(isProduction ? $.uglifyjs() : $.util.noop())
-    .pipe(gulp.dest(config.dist + 'js/'))
+    .pipe(gulp.dest(config.dist))
     .pipe($.size({ title : 'js' }))
     .pipe($.connect.reload());
 });
@@ -65,8 +65,8 @@ gulp.task('images', function(cb) {
     .pipe(gulp.dest(config.dist + 'img/'));
 });
 
-// waits until clean is finished then builds the project
-gulp.task('build', ['images', 'js', 'styles'], function(){
+// waits until is finished then builds the project
+gulp.task('build', ['images', 'js', 'styles'], function(cb) {
   return gulp.src(config.src + 'index.html')
     .pipe(gulp.dest(config.dist))
     .pipe($.size({ title : 'html' }))
